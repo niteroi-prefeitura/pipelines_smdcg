@@ -25,7 +25,7 @@ URL_TO_GENERATE_TOKEN: os.getenv("URL_TO_GENERATE_TOKEN")
 
 AGOL_USERNAME: os.getenv("AGOL_USERNAME")
 AGOL_PASSWORD: os.getenv("AGOL_PASSWORD")
-LAYER_ID_AGOL: os.getenv("LAYER_ID_AGOL")
+LAYER_ID_AGOL_SVIDA: os.getenv("LAYER_ID_AGOL_SVIDA")
 URL_GIS_ENTERPRISE: os.getenv("URL_GIS_ENTERPRISE")
 
 URL_PREVISAO_API: os.getenv("URL_PREVISAO_API")
@@ -41,7 +41,7 @@ URL_AVISOS_API: os.getenv("URL_AVISOS_API")
 
 
 @task
-def colunasnum(df, coluna):
+def columsnum(df, coluna):
     df[coluna] = df[coluna].astype(float)
     return df
 
@@ -49,17 +49,17 @@ def colunasnum(df, coluna):
 
 
 @task
-def previsao():
+def weather_preview():
     response = requests.get(URL_PREVISAO_API)
     var_dict = response.__dict__
     content = var_dict['_content']
-    valores = content.decode().split(';')
+    values = content.decode().split(';')
 
     # remover coluna extra
-    valores = valores[:-1]
+    values = values[:-1]
 
     # Criar DataFrame com validação do número de colunas
-    df = pd.DataFrame([valores], columns=['tx_hoje', 'tx_amanhã'])
+    df = pd.DataFrame([values], columns=['tx_hoje', 'tx_amanhã'])
 
     return df
 
@@ -67,30 +67,30 @@ def previsao():
 
 
 @task
-def pontos_apoio():
+def support_places():
 
     # Acessando a API
     response = requests.get(URL_PONTOS_APOIO_API)
     # Transoformando a resposta em texto
-    pt_apoio_str = response.text
+    support_places_str = response.text
     # Separando pontos de apoio em itens de uma lista
-    pt_apoio_list = pt_apoio_str.split('\n')
+    support_places_list = support_places_str.split('\n')
     # Criando a base de dados
     df = pd.DataFrame(columns=['tx_local', 'fl_lat', 'fl_lon', 'tx_endereco'])
     # Contando quantidade de colunas de um df
     qt_col_df = df.shape[1]
     # Tratando dados
-    for pt_apoio in pt_apoio_list:
-        pt_apoio_txt = str(pt_apoio)
-        if len(pt_apoio_txt) > 0:
-            pt_apoio_linha = pt_apoio_txt.split(';')
+    for support_places in support_places_list:
+        support_places_txt = str(support_places)
+        if len(support_places_txt) > 0:
+            support_places_line = support_places_txt.split(';')
             # Testando se o numero de colunas é o mesmo
-            if qt_col_df == len(pt_apoio_linha):
+            if qt_col_df == len(support_places_line):
                 # Append no DF
-                df.loc[len(df)] = pt_apoio_linha
+                df.loc[len(df)] = support_places_line
     # Tratando colunas numéricas
-    df = colunasnum(df, 'fl_lat')
-    df = colunasnum(df, 'fl_lon')
+    df = columsnum(df, 'fl_lat')
+    df = columsnum(df, 'fl_lon')
 
     return df
 
@@ -98,7 +98,7 @@ def pontos_apoio():
 
 
 @task
-def pluvtrat():
+def pluv_treatment():
 
     response_pluv = requests.get(URL_PLUVIOMETROS_API)
 
@@ -115,18 +115,18 @@ def pluvtrat():
 
     # Colocando itens no Dataframe
     for pluv in pluv_list:
-        linha_pluv_str = str(pluv)
-        if len(linha_pluv_str) > 0:
-            linha_list = linha_pluv_str.split(';')
+        line_pluv_str = str(pluv)
+        if len(line_pluv_str) > 0:
+            line_list = line_pluv_str.split(';')
             qt_col_df = df.shape[1]
-            if qt_col_df == len(linha_list):
-                df.loc[len(df)] = linha_list
+            if qt_col_df == len(line_list):
+                df.loc[len(df)] = line_list
 
     # Tratando colunas numéricas
-    lista_col = ['fl_lat', 'fl_lon', 'fl_ppnow', 'fl_pp1h',
-                 'fl_pp4h', 'fl_pp24h', 'fl_pp96h', 'fl_pp30d']
-    for col in lista_col:
-        df = colunasnum(df, col)
+    list_col = ['fl_lat', 'fl_lon', 'fl_ppnow', 'fl_pp1h',
+                'fl_pp4h', 'fl_pp24h', 'fl_pp96h', 'fl_pp30d']
+    for col in list_col:
+        df = columsnum(df, col)
 
     # Filtrando para manter apenas os registros mais recentes por estação
     df = df.sort_values(by='dt_data', ascending=True).drop_duplicates(
@@ -141,7 +141,7 @@ def pluvtrat():
 
 
 @task
-def conexao_portal():
+def portal_conection():
     # Dados de autenticação
     token_url = URL_TO_GENERATE_TOKEN
     params = {
@@ -334,7 +334,7 @@ def update_pluv(layer, df, id_column, fl_columns, geometry_cols, history_table):
 
 
 @task
-def estagioatt(agora):
+def attention_stage(now):
     # Acessando API
     response_atenc = requests.get(URL_ESTAGIO_ATENC_API)
 
@@ -345,7 +345,7 @@ def estagioatt(agora):
     pluv_str = pluv_str.replace("\n", "")
 
     # Coletando data e hora
-    data = agora
+    data = now
 
     # Etruturando df
     df = pd.DataFrame({'tx_estagio': [pluv_str], 'dt_data': [data]})
@@ -356,32 +356,32 @@ def estagioatt(agora):
 
 
 @task
-def sirenes():
+def sirens():
     # Acessando API
-    response_sirene = requests.get(URL_SIRENES_API)
+    response_sirens = requests.get(URL_SIRENES_API)
 
     # Estruturando o DataFrame das sirenes.
     df = pd.DataFrame(columns=['fl_lat', 'fl_lon', 'tx_sirene', 'tx_cidade',
                                'tx_campo1', 'tx_status', 'tx_campo2'])
 
     # Coletando as informações em texto
-    sirenes_str = response_sirene.text
+    sirens_str = response_sirens.text
 
     # Separando em lista
-    sirene_list = sirenes_str.split('\n')
+    sirens_list = sirens_str.split('\n')
 
     # Colocando itens no Dataframe
-    for sirene in sirene_list:
-        linha_sirene_str = str(sirene)
-        if len(linha_sirene_str) > 0:
-            linha_list = linha_sirene_str.split(';')
+    for siren in sirens_list:
+        siren_line_str = str(siren)
+        if len(siren_line_str) > 0:
+            line_list = siren_line_str.split(';')
             qt_col_df = df.shape[1]
-            if qt_col_df == len(linha_list):
-                df.loc[len(df)] = linha_list
+            if qt_col_df == len(line_list):
+                df.loc[len(df)] = line_list
 
     # Tratando colunas numéricas
-    df = colunasnum(df, 'fl_lat')
-    df = colunasnum(df, 'fl_lon')
+    df = columsnum(df, 'fl_lat')
+    df = columsnum(df, 'fl_lon')
 
     return df
 
@@ -389,7 +389,7 @@ def sirenes():
 
 
 @task
-def meteorologia():
+def meteorology():
     # Acessando API
     response_meteoro = requests.get(URL_METEOROLOGIA_API)
 
@@ -410,8 +410,8 @@ def meteorologia():
         df.loc[len(df)] = meteoro_list
 
     # Tratando colunas numéricas
-    df = colunasnum(df, 'fl_lat')
-    df = colunasnum(df, 'fl_lon')
+    df = columsnum(df, 'fl_lat')
+    df = columsnum(df, 'fl_lon')
 
     return df
 
@@ -419,17 +419,17 @@ def meteorologia():
 
 
 @task
-def avisos():
+def alerts():
     # Acessando API
-    response_avisos = requests.get(URL_AVISOS_API)
-    avisos_dict = response_avisos.__dict__
-    valores = avisos_dict['_content']
+    response_alerts = requests.get(URL_AVISOS_API)
+    alerts_dict = response_alerts.__dict__
+    values = alerts_dict['_content']
 
     # Decodificando para string e dividindo em colunas.
-    valores = valores.decode().split(';')
+    values = values.decode().split(';')
 
     # Estruturando df
-    df = pd.DataFrame([valores], columns=['tx_titulo',
+    df = pd.DataFrame([values], columns=['tx_titulo',
                       'tx_descrip', 'tx_titulo1', 'tx_nivel'])
     df['tx_nivel'] = df['tx_nivel'].str.strip()
 
@@ -439,8 +439,8 @@ def avisos():
 
 
 @task
-def enviar_email(apk, erros):
-    corpo_email = f"""
+def send_email(apk, erros):
+    body_email = f"""
     <p>Falhas: {apk}</p>
     <p>Erros: {erros}</p>
     """
@@ -451,7 +451,7 @@ def enviar_email(apk, erros):
     msg['To'] = RECIPIENT_EMAIL_ADDRESS
     password = SENDER_EMAIL_PASSWORD
     msg.add_header('Content-Type', 'text/html')
-    msg.set_payload(corpo_email)
+    msg.set_payload(body_email)
 
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
@@ -463,7 +463,7 @@ def enviar_email(apk, erros):
 
 
 @task
-def gis_funcao(df_pluv, df_estagio, df_pt_apoio, df_previsao, df_sirenes, df_meteoro, df_avisos, agora, pluv_hist):
+def gis_function(df_pluv, df_attention_stage, df_support_place, df_weather_preview, df_sirens, df_meteoro, df_alerts, now, pluv_hist):
 
     # Conectando ao Agol
     url = "https://www.arcgis.com"
@@ -472,19 +472,19 @@ def gis_funcao(df_pluv, df_estagio, df_pt_apoio, df_previsao, df_sirenes, df_met
     gis = GIS(url, usr, pwd)
 
     # listar layers
-    layer_id = LAYER_ID_AGOL
+    layer_id = LAYER_ID_AGOL_SVIDA
     portal_item = Item(gis, layer_id)
 
     layers = portal_item.layers
     tables = portal_item.tables
 
     pluv = layers[0]
-    pt_apoio = layers[1]
-    radar_met = layers[2]
-    sirenes = layers[3]
-    avisos = tables[3]
-    estagio = tables[1]
-    previsao = tables[0]
+    support_places = layers[1]
+    weather_radar = layers[2]
+    sirens = layers[3]
+    alerts = tables[3]
+    attention_stage = tables[1]
+    weather_preview = tables[0]
 
     def process_layer(layer, df, geometry_cols, attr_cols, spatial_ref=4326):
         existing_features = layer.query(out_fields=["OBJECTID"]).features
@@ -543,56 +543,58 @@ def gis_funcao(df_pluv, df_estagio, df_pt_apoio, df_previsao, df_sirenes, df_met
         history_table=pluv_hist,
     )
 
-    process_layer(pt_apoio, df_pt_apoio, ["fl_lon", "fl_lat"],
+    process_layer(support_places, df_support_place, ["fl_lon", "fl_lat"],
                   ['tx_local', 'tx_endereco'])
 
-    process_layer(radar_met, df_meteoro, ["fl_lon", "fl_lat"],
+    process_layer(weather_radar, df_meteoro, ["fl_lon", "fl_lat"],
                   ['tx_nome', 'fl_temp', 'fl_umidade', 'tx_dir_vento',
                    'fl_velvento', 'dt_campo1', 'tx_campo2'])
 
-    process_layer(sirenes, df_sirenes, ["fl_lon", "fl_lat"],
+    process_layer(sirens, df_sirens, ["fl_lon", "fl_lat"],
                   ['tx_sirene', 'tx_cidade', 'tx_campo1', 'tx_status', 'tx_campo2'])
 
-    process_table(avisos, df_avisos, [
+    process_table(alerts, df_alerts, [
                   'tx_titulo', 'tx_descrip', 'tx_titulo1', 'tx_nivel'])
 
-    process_table(estagio, df_estagio, ['tx_estagio', 'dt_data'])
+    process_table(attention_stage, df_attention_stage,
+                  ['tx_estagio', 'dt_data'])
 
-    process_table(previsao, df_previsao, ['tx_hoje', 'tx_amanhã'])
+    process_table(weather_preview, df_weather_preview,
+                  ['tx_hoje', 'tx_amanhã'])
 
 # Função principal
 
 
 @flow(name="fluxo-svida-smdcg")
-def fluxo_svida_integracao():
-    agora = datetime.now()
+def svida_integration_flow():
+    now = datetime.now()
     apk = []
     erros = []
 
     processos = {
-        "Pluviômetros": pluvtrat,
-        "Estágio de Atenção": lambda: estagioatt(agora),
-        "Pontos de Apoio": pontos_apoio,
-        "Previsão": previsao,
-        "Sirenes": sirenes,
-        "Radar Meteorológico": meteorologia,
-        "Avisos": avisos,
+        "Pluviômetros": pluv_treatment,
+        "Estágio de Atenção": lambda: attention_stage(now),
+        "Pontos de Apoio": support_places,
+        "Previsão": weather_preview,
+        "Sirenes": sirens,
+        "Radar Meteorológico": meteorology,
+        "Avisos": alerts,
     }
 
-    resultados = {}
-    for nome, funcao in processos.items():
+    results = {}
+    for name, function in processos.items():
         try:
-            resultados[nome] = funcao()
+            results[name] = function()
         except Exception as e:
-            print(f"Erro ao carregaro df - {nome}: {str(e)}")
-            apk.append(nome)
+            print(f"Erro ao carregaro df - {name}: {str(e)}")
+            apk.append(name)
             erros.append(e)
         else:
-            print(f"{nome} carregado com sucesso")
+            print(f"{name} carregado com sucesso")
 
     try:
         # Conectar ao Portal e obter o pluv_hist
-        pluv_hist = conexao_portal()
+        pluv_hist = portal_conection()
     except Exception as e:
         print(f"Erro ao conectar ao Portal: {str(e)}")
         apk.append("Conexão Portal")
@@ -601,15 +603,15 @@ def fluxo_svida_integracao():
         print("Conexão ao Portal realizada com sucesso")
 
     try:
-        gis_funcao(
-            resultados.get("Pluviômetros"),
-            resultados.get("Estágio de Atenção"),
-            resultados.get("Pontos de Apoio"),
-            resultados.get("Previsão"),
-            resultados.get("Sirenes"),
-            resultados.get("Radar Meteorológico"),
-            resultados.get("Avisos"),
-            agora,
+        gis_function(
+            results.get("Pluviômetros"),
+            results.get("Estágio de Atenção"),
+            results.get("Pontos de Apoio"),
+            results.get("Previsão"),
+            results.get("Sirenes"),
+            results.get("Radar Meteorológico"),
+            results.get("Avisos"),
+            now,
             pluv_hist=pluv_hist
         )
     except Exception as e:
@@ -620,8 +622,8 @@ def fluxo_svida_integracao():
         print("Feições e tabelas atualizadas com sucesso")
 
     if apk:
-        enviar_email(apk, erros)
+        send_email(apk, erros)
 
 
 if __name__ == "__main__":
-    fluxo_svida_integracao()
+    svida_integration_flow()
