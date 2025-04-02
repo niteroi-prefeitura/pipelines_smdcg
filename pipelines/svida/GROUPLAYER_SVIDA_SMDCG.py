@@ -25,7 +25,7 @@ URL_TO_GENERATE_TOKEN: os.getenv("URL_TO_GENERATE_TOKEN")
 
 AGOL_USERNAME: os.getenv("AGOL_USERNAME")
 AGOL_PASSWORD: os.getenv("AGOL_PASSWORD")
-LAYER_ID_AGOL: os.getenv("LAYER_ID_AGOL")
+LAYER_ID_AGOL_SVIDA: os.getenv("LAYER_ID_AGOL_SVIDA")
 URL_GIS_ENTERPRISE: os.getenv("URL_GIS_ENTERPRISE")
 
 URL_PREVISAO_API: os.getenv("URL_PREVISAO_API")
@@ -472,7 +472,7 @@ def gis_funcao(df_pluv, df_estagio, df_pt_apoio, df_previsao, df_sirenes, df_met
     gis = GIS(url, usr, pwd)
 
     # listar layers
-    layer_id = LAYER_ID_AGOL
+    layer_id = LAYER_ID_AGOL_SVIDA
     portal_item = Item(gis, layer_id)
 
     layers = portal_item.layers
