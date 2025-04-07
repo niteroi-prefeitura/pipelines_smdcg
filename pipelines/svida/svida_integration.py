@@ -17,7 +17,7 @@ load_dotenv()
 user_portal = Secret.load("usuario-pmngeo-portal").get()
 user_agol = Secret.load("usuario-integrador-agol").get()
 gis_variables = Variable.get("gis_portal_variables")
-gis_variables = Variable.get("svida_variables")
+svida_variables = Variable.get("svida_variables")
 
 PORTAL_USERNAME: os.getenv("PORTAL_USERNAME", user_portal["username"])
 PORTAL_PASSWORD: os.getenv("PORTAL_PASSWORD", user_portal["password"])
@@ -31,17 +31,17 @@ AGOL_USERNAME: os.getenv("AGOL_USERNAME", user_agol["username"])
 AGOL_PASSWORD: os.getenv("AGOL_PASSWORD", user_agol["password"])
 
 
-LAYER_NAME_PORTAL_HIST_PLUV: os.getenv("LAYER_NAME_PORTAL_HIST_PLUV", gis_variables["LAYER_NAME_PORTAL_HIST_PLUV"])
-LAYER_ID_AGOL_SVIDA: os.getenv("LAYER_ID_AGOL_SVIDA", gis_variables["LAYER_ID_AGOL_SVIDA"])
+LAYER_NAME_PORTAL_HIST_PLUV: os.getenv("LAYER_NAME_PORTAL_HIST_PLUV", svida_variables["LAYER_NAME_PORTAL_HIST_PLUV"])
+LAYER_ID_AGOL_SVIDA: os.getenv("LAYER_ID_AGOL_SVIDA", svida_variables["LAYER_ID_AGOL_SVIDA"])
 
 
-URL_PREVISAO_API: os.getenv("URL_PREVISAO_API", gis_variables["URL_PREVISAO_API"])
-URL_PONTOS_APOIO_API: os.getenv("URL_PONTOS_APOIO_API", gis_variables["URL_PONTOS_APOIO_API"])
-URL_PLUVIOMETROS_API: os.getenv("URL_PLUVIOMETROS_API", gis_variables["URL_PLUVIOMETROS_API"])
-URL_ESTAGIO_ATENC_API: os.getenv("URL_ESTAGIO_ATENC_API", gis_variables["URL_ESTAGIO_ATENC_API"])
-URL_SIRENES_API: os.getenv("URL_SIRENES_API", gis_variables["URL_SIRENES_API"])
-URL_METEOROLOGIA_API: os.getenv("URL_METEOROLOGIA_API", gis_variables["URL_METEOROLOGIA_API"])
-URL_AVISOS_API: os.getenv("URL_AVISOS_API", gis_variables["URL_AVISOS_API"])
+URL_PREVISAO_API: os.getenv("URL_PREVISAO_API", svida_variables["URL_PREVISAO_API"])
+URL_PONTOS_APOIO_API: os.getenv("URL_PONTOS_APOIO_API", svida_variables["URL_PONTOS_APOIO_API"])
+URL_PLUVIOMETROS_API: os.getenv("URL_PLUVIOMETROS_API", svida_variables["URL_PLUVIOMETROS_API"])
+URL_ESTAGIO_ATENC_API: os.getenv("URL_ESTAGIO_ATENC_API", svida_variables["URL_ESTAGIO_ATENC_API"])
+URL_SIRENES_API: os.getenv("URL_SIRENES_API", svida_variables["URL_SIRENES_API"])
+URL_METEOROLOGIA_API: os.getenv("URL_METEOROLOGIA_API", svida_variables["URL_METEOROLOGIA_API"])
+URL_AVISOS_API: os.getenv("URL_AVISOS_API", svida_variables["URL_AVISOS_API"])
 
 
 # Função para tratar colunas em texto para numéricas
