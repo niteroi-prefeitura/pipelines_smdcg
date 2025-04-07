@@ -17,7 +17,7 @@ load_dotenv()
 user_portal = Secret.load("usuario-pmngeo-portal").get()
 user_agol = Secret.load("usuario-integrador-agol").get()
 gis_variables = Variable.get("gis_portal_variables")
-svida_variables = Variable.get("svida_variables")
+svida_variables = Variable.get("smdcg_variables")
 
 PORTAL_USERNAME = os.getenv("PORTAL_USERNAME") or user_portal["username"]
 PORTAL_PASSWORD = os.getenv("PORTAL_PASSWORD") or user_portal["password"]

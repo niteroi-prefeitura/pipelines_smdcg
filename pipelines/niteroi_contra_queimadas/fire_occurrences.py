@@ -1,75 +1,72 @@
 import os
-import time
 import json
-import sched
 import requests
 import pandas as pd
-from arcgis.gis import GIS
-from arcgis.gis import Item
+import numpy as np
 from dotenv import load_dotenv
-from datetime import datetime, date, timedelta
-from arcgis.features import FeatureLayerCollection
-from arcgis.features import GeoAccessor, GeoSeriesAccessor
-from arcgis.geometry import Point, Polyline, Polygon, Geometry
+from arcgis.gis import GIS
+from datetime import timedelta
+from prefect import flow
+from prefect.variables import Variable
+from prefect.blocks.system import Secret
 
 load_dotenv()
+user_agol = Secret.load("usuario-integrador-agol").get()
+smdcg_variables = Variable.get("smdcg_variables")
+gis_variables = Variable.get("gis_portal_variables")
 
-AGOL_USERNAME_TO_NCQ: os.getenv("AGOL_USERNAME_TO_NCQ")
-AGOL_PASSWORD_TO_NCQ: os.getenv("AGOL_PASSWORD_TO_NCQ")
-LAYER_ID_AGOL_OCORRENCIAS_FOGO: os.getenv("LAYER_ID_AGOL_OCORRENCIAS_FOGO")
-URL_GIS_ENTERPRISE_GEONITEROI: os.getenv("URL_GIS_ENTERPRISE_GEONITEROI")
-
-URL_FOGO_API: os.getenv("URL_FOGO_API")
-
+AGOL_USERNAME_TO_NCQ = os.getenv("AGOL_USERNAME_TO_NCQ") or user_agol["username"]
+AGOL_PASSWORD_TO_NCQ = os.getenv("AGOL_PASSWORD_TO_NCQ") or user_agol["password"]
+LAYER_ID_AGOL_OCORRENCIAS_FOGO = os.getenv("LAYER_ID_AGOL_OCORRENCIAS_FOGO") or smdcg_variables["LAYER_ID_AGOL_OCORRENCIAS_FOGO"]
+URL_GIS_ENTERPRISE_GEONITEROI = os.getenv("URL_GIS_ENTERPRISE_GEONITEROI") or gis_variables["URL_GIS_ENTERPRISE_GEONITEROI"]
+URL_FOGO_API = os.getenv("URL_FOGO_API") or smdcg_variables["URL_FOGO_API"]
 
 def update_df():
-    """
-    This function fetches data from the API, creates a DataFrame, and updates it with new records.
-    """
-    response = requests.get(URL_FOGO_API)
-    var_dict = response.__dict__
-    content = var_dict['_content']
-    obj1 = json.loads(content)
-    df0 = pd.DataFrame(obj1)
-    df1 = pd.concat([df0.drop(['fields'], axis=1),
-                    df0['fields'].apply(pd.Series)], axis=1)
+  """
+  This function fetches data from the API, creates a DataFrame, and updates it with new records.
+  """
+  response = requests.get(URL_FOGO_API)
+  var_dict = response.__dict__
+  content = var_dict['_content']
+  obj1 = json.loads(content)
+  df0 = pd.DataFrame(obj1)
+  df1 = pd.concat([df0.drop(['fields'], axis=1), df0['fields'].apply(pd.Series)], axis=1)
 
-    # Reordenar as colunas, colocando 'data' e 'hora' nas primeiras posições e mantendo o restante
-    new_order = ['pk', 'data', 'bairro', 'log', 'incidente', 'location']
+  # Reordenar as colunas, colocando 'data' e 'hora' nas primeiras posições e mantendo o restante
+  new_order = ['pk', 'data', 'bairro', 'log', 'incidente', 'location']
+ 
+  # Aplicar a nova ordem ao DataFrame
+  df = df1[new_order]
+  df.loc[df['incidente'].isin([1, 2])]
 
-    # Aplicar a nova ordem ao DataFrame
-    df = df1[new_order]
-    df.loc[df['incidente'].isin([1, 2])]
 
-    # Função para padronizar o formato da "location"
+  # Função para padronizar o formato da "location"
+  def padronizar_location(location):
+      if ',' in location and location.count(',') == 1:
+          return location
+      elif '/' in location and location.count('/') == 1:
+          return location.replace(' / ', ',')
+      else:
+          return None
 
-    def standardize_location(location):
-        if ',' in location and location.count(',') == 1:
-            return location
-        elif '/' in location and location.count('/') == 1:
-            return location.replace(' / ', ',')
-        else:
-            return None
+  # Aplicar a função para padronizar todas as linhas
+  df['location'] = df['location'].apply(padronizar_location)
 
-    # Aplicar a função para padronizar todas as linhas
-    df['location'] = df['location'].apply(standardize_location)
+  # Remover linhas com valores inválidos (None)
+  df = df.dropna(subset=['location'])
 
-    # Remover linhas com valores inválidos (None)
-    df = df.dropna(subset=['location'])
+  # Separar a coluna 'location' em duas colunas: 'latitude' e 'longitude'
+  df[['latitude', 'longitude']] = df['location'].str.split(',', expand=True)
 
-    # Separar a coluna 'location' em duas colunas: 'latitude' e 'longitude'
-    df[['latitude', 'longitude']] = df['location'].str.split(',', expand=True)
+  # Converter os valores para numérico
+  df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
+  df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
 
-    # Converter os valores para numérico
-    df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
-    df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
-
-    # Remover a coluna 'location' original se necessário
-    df = df.drop(columns=['location'])
-    df = df.drop(columns=['incidente'])
-
-    return df
-
+  # Remover a coluna 'location' original se necessário
+  df = df.drop(columns=['location'])
+  df = df.drop(columns=['incidente'])
+    
+  return df
 
 def execute():
     df = update_df()
@@ -84,7 +81,7 @@ def execute():
             "geometry": {
                 "x": row['longitude'],
                 "y": row['latitude']
-            },
+                },
             "attributes": {
                 "pk": row['pk'],
                 "data": row['data'],
@@ -94,6 +91,8 @@ def execute():
         }
         # Adicionar a feature à lista
         geojson_features.append(feature)
+        
+
 
     # GeoJSON final
     geojson_data = {
@@ -115,73 +114,67 @@ def execute():
                 # Converter para timestamp em milissegundos
                 timestamp = int(dt.timestamp() * 1000)
                 feature['attributes']['data'] = timestamp
-
+                
             except ValueError:
-                # Atribuir None caso a conversão falhe
-                feature['attributes']['data'] = None
+                feature['attributes']['data'] = None  # Atribuir None caso a conversão falhe
 
-    import numpy as np
-    # Conectando ao Agol
+    #Conectando ao Agol
     url = URL_GIS_ENTERPRISE_GEONITEROI
     usr = AGOL_USERNAME_TO_NCQ
     pwd = AGOL_PASSWORD_TO_NCQ
-    gis = GIS(url, usr, pwd, verify_cert=False)
+    gis = GIS(url, usr, pwd,verify_cert=False)
     layer_id = LAYER_ID_AGOL_OCORRENCIAS_FOGO
 
     gis = GIS(url, usr, pwd)
 
     # Localize a Feature Layer onde os dados estão armazenados (insira o seu Item ID)
     item = gis.content.get(layer_id)
-    # Assumindo que você está trabalhando com a primeira camada
-    layer = item.layers[0]
+    layer = item.layers[0]  # Assumindo que você está trabalhando com a primeira camada
 
     # # Assumindo que a variável 'geojson_data' já contém o GeoJSON no formato correto
     # features = geojson_features
     features = geojson_data['features']
 
-    layer_features = layer.query(
-        where='1=1', return_geometry=False, as_df=True)
+    layer_features = layer.query(where='1=1',return_geometry=False,as_df=True)
     layer_features = layer_features.fillna(999)
     features_to_delete = []
     features_to_add = []
+    
 
     # Processar cada feature do GeoJSON
     for feature in features:
-
+        
         pk_api = feature['attributes']['pk']  # 'pk' deve ser a chave primária
-
+        
         existing_feature = layer_features.loc[layer_features['pk'] == pk_api]
-
+            
         if existing_feature.empty:
             # Se não existe um registro com o mesmo 'pk', adicionar o novo
             features_to_add.append(feature)
         else:
             for column in existing_feature.columns:
                 current_index = existing_feature[column].index.values[0]
-
+                
                 if column == 'data':
-                    current_layer_value = int(
-                        existing_feature[column][current_index].timestamp()) * 1000
-
+                    current_layer_value = int(existing_feature[column][current_index].timestamp()) * 1000
+                    
                 elif column == 'bairro':
-                    current_layer_value = int(
-                        existing_feature[column][current_index])
-
+                    current_layer_value = int(existing_feature[column][current_index])
+                    
                 else:
                     current_layer_value = existing_feature[column][current_index]
-
+                    
                 try:
                     if column != 'logradouro' and np.isnan(feature['attributes'][column]):
                         current_api_value = 999
-                    else:
+                    else: 
                         current_api_value = feature['attributes'][column]
-
+                    
                     if current_layer_value != current_api_value:
                         features_to_add.append(feature)
-                        features_to_delete.append(
-                            existing_feature['OBJECTID'][current_index])
+                        features_to_delete.append(existing_feature['OBJECTID'][current_index])
                         break
-
+                        
                 except:
                     continue
 
@@ -194,18 +187,17 @@ def execute():
 
     # Excluir registros antigos de mesmo 'pk'
     if features_to_delete:
-        delete_result = layer.delete_features(deletes=str(features_to_delete))
+        delete_result = layer.delete_features(deletes= str(features_to_delete))
         print(f"Delete Result: {delete_result}")
     else:
         print('Nenhuma feição deletada')
 
+# Função main para rodar o código
+def main():
+    print("Iniciando a execução...")
+    execute()
+    print("Execução concluída.")
 
-def task(scheduler):
-    scheduler.enter(3600, 1, task, (scheduler,))
-    print('Atualizado', datetime.now())
-    update_df()
-
-
-my_scheduler = sched.scheduler(time.time, time.sleep)
-my_scheduler.enter(3600, 1, task, (my_scheduler,))
-my_scheduler.run()
+# Verifica se o script está sendo executado diretamente
+if __name__ == "__main__":
+    main()
