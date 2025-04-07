@@ -5,7 +5,8 @@ import pandas as pd
 from prefect import flow
 from arcgis.gis import GIS
 from dotenv import load_dotenv
-from datetime import timedelta
+import datetime
+import pytz
 from prefect import flow, task
 from prefect.variables import Variable
 from prefect.blocks.system import Secret
@@ -22,6 +23,12 @@ LAYER_ID_AGOL_METEOROLOGIA = os.getenv("LAYER_ID_AGOL_METEOROLOGIA") or smdcg_va
 URL_GIS_ENTERPRISE_GEONITEROI = os.getenv("URL_GIS_ENTERPRISE_GEONITEROI") or gis_variables["URL_GIS_ENTERPRISE_GEONITEROI"]
 URL_RISCO_FOGO_API = os.getenv("URL_RISCO_FOGO_API") or smdcg_variables["URL_RISCO_FOGO_API"]
 URL_METEOROLOGIA_API = os.getenv("URL_METEOROLOGIA_API") or smdcg_variables["URL_METEOROLOGIA_API"]
+
+def create_ms_timestamp(df,col_name):
+    brasil_tz = pytz.timezone('America/Sao_Paulo')
+    now = datetime.datetime.now(brasil_tz) 
+    timestamp_ms = int(now.timestamp()*1000)
+    df[col_name] = timestamp_ms
 
 @task
 def connect_agol():
@@ -69,14 +76,16 @@ def get_api_meteorologia():
         content_weather = var_dict_weather['_content']
 
         # Divide a string content_weather em colunas
-        values = content_weather.decode().split(';')  # decode de bytes para string
+        decode = content_weather.decode()  # decode de bytes para string
 
-        # Ignora os 3 primieros e o último valor
-        values = values[3:-1]
+        rows = [line.split(';') for line in decode.strip().split('\n')]
 
-        # Cria o DataFrame com os valores restantes
-        dft = pd.DataFrame([values], columns=['temperatura',
-                        'umidade', 'vento', 'velocidade do vento', 'data'])
+        # Criando um dataframe
+        dft = pd.DataFrame(rows, columns=[
+        'Local', 'Latitude', 'Longitude', 'temperatura', 'umidade', 
+        'vento', 'velocidade do vento', 'data', 'Velocidade_vento_2'])
+    
+        dft = dft.drop(columns=['Local', 'Latitude', 'Longitude', 'Velocidade_vento_2'])
         
         return dft
     except requests.exceptions.RequestException as e:
@@ -98,20 +107,14 @@ def fire_risk_flow():
 
         # Adiciona os campos 'grav' e 'data_inicial' e seus valores
         dft['grav'] = df_risco['grav']
-        dft['data_inicial'] = df_risco['data_inicial']
-
+        
+        create_ms_timestamp(dft,'data_inicial')
         # Converte 'data' e 'data_inicial' em objetos datetime
         dft['data'] = pd.to_datetime(dft['data'])
-        dft['data_inicial'] = pd.to_datetime(dft['data_inicial'])
-
-        # Adiciona 3 h em 'data' e 'data_inicial'
-        dft['data'] = dft['data'] + timedelta(hours=3)
-        dft['data_inicial'] = dft['data_inicial'] + timedelta(hours=3)
+        dft['data'] = dft['data'].dt.tz_localize('America/Sao_Paulo')
 
         # Converte as colunas de 'data' e 'data_inicial' em millisegundos, timestamp
         dft['data'] = dft['data'].apply(lambda x: int(x.timestamp() * 1000))
-        dft['data_inicial'] = dft['data_inicial'].apply(
-            lambda x: int(x.timestamp() * 1000))
 
         # Cria um geojson com os dados do dataframe dft
         geojson_features = []
