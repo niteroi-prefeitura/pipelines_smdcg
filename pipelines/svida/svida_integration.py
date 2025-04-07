@@ -1,40 +1,47 @@
 import os
-import json
-import smtplib
 import requests
 import pandas as pd
-import email.message
 from arcgis.gis import GIS
 from arcgis.gis import Item
 from dotenv import load_dotenv
 from prefect import task, flow
 from arcgis.features import FeatureLayer
 from datetime import datetime, timedelta
-from arcgis.features import FeatureLayerCollection
+
+from prefect import flow
+from prefect.variables import Variable
+from prefect.blocks.system import Secret
 
 load_dotenv()
 
-SENDER_EMAIL_ADDRESS: os.getenv("SENDER_EMAIL_ADDRESS")
-SENDER_EMAIL_PASSWORD: os.getenv("SENDER_EMAIL_PASSWORD")
-RECIPIENT_EMAIL_ADDRESS: os.getenv("SRECIPIENT_EMAIL_ADDRESS")
+user_portal = Secret.load("usuario-pmngeo-portal").get()
+user_agol = Secret.load("usuario-integrador-agol").get()
+gis_variables = Variable.get("gis_portal_variables")
+gis_variables = Variable.get("svida_variables")
 
-PORTAL_USERNAME: os.getenv("PORTAL_USERNAME")
-PORTAL_PASSWORD: os.getenv("PORTAL_PASSWORD")
-LAYER_NAME_PORTAL_HIST_PLUV: os.getenv("LAYER_NAME_PORTAL_HIST_PLUV")
-URL_TO_GENERATE_TOKEN: os.getenv("URL_TO_GENERATE_TOKEN")
+PORTAL_USERNAME: os.getenv("PORTAL_USERNAME", user_portal["username"])
+PORTAL_PASSWORD: os.getenv("PORTAL_PASSWORD", user_portal["password"])
 
-AGOL_USERNAME: os.getenv("AGOL_USERNAME")
-AGOL_PASSWORD: os.getenv("AGOL_PASSWORD")
-LAYER_ID_AGOL_SVIDA: os.getenv("LAYER_ID_AGOL_SVIDA")
-URL_GIS_ENTERPRISE: os.getenv("URL_GIS_ENTERPRISE")
 
-URL_PREVISAO_API: os.getenv("URL_PREVISAO_API")
-URL_PONTOS_APOIO_API: os.getenv("URL_PONTOS_APOIO_API")
-URL_PLUVIOMETROS_API: os.getenv("URL_PLUVIOMETROS_API")
-URL_ESTAGIO_ATENC_API: os.getenv("URL_ESTAGIO_ATENC_API")
-URL_SIRENES_API: os.getenv("URL_SIRENES_API")
-URL_METEOROLOGIA_API: os.getenv("URL_METEOROLOGIA_API")
-URL_AVISOS_API: os.getenv("URL_AVISOS_API")
+URL_TO_GENERATE_TOKEN: os.getenv("URL_TO_GENERATE_TOKEN", gis_variables["URL_TO_GENERATE_TOKEN"])
+URL_GIS_ENTERPRISE: os.getenv("URL_GIS_ENTERPRISE", gis_variables["URL_GIS_ENTERPRISE"])
+
+
+AGOL_USERNAME: os.getenv("AGOL_USERNAME", user_agol["username"])
+AGOL_PASSWORD: os.getenv("AGOL_PASSWORD", user_agol["password"])
+
+
+LAYER_NAME_PORTAL_HIST_PLUV: os.getenv("LAYER_NAME_PORTAL_HIST_PLUV", gis_variables["LAYER_NAME_PORTAL_HIST_PLUV"])
+LAYER_ID_AGOL_SVIDA: os.getenv("LAYER_ID_AGOL_SVIDA", gis_variables["LAYER_ID_AGOL_SVIDA"])
+
+
+URL_PREVISAO_API: os.getenv("URL_PREVISAO_API", gis_variables["URL_PREVISAO_API"])
+URL_PONTOS_APOIO_API: os.getenv("URL_PONTOS_APOIO_API", gis_variables["URL_PONTOS_APOIO_API"])
+URL_PLUVIOMETROS_API: os.getenv("URL_PLUVIOMETROS_API", gis_variables["URL_PLUVIOMETROS_API"])
+URL_ESTAGIO_ATENC_API: os.getenv("URL_ESTAGIO_ATENC_API", gis_variables["URL_ESTAGIO_ATENC_API"])
+URL_SIRENES_API: os.getenv("URL_SIRENES_API", gis_variables["URL_SIRENES_API"])
+URL_METEOROLOGIA_API: os.getenv("URL_METEOROLOGIA_API", gis_variables["URL_METEOROLOGIA_API"])
+URL_AVISOS_API: os.getenv("URL_AVISOS_API", gis_variables["URL_AVISOS_API"])
 
 
 # Função para tratar colunas em texto para numéricas
@@ -435,30 +442,6 @@ def alerts():
 
     return df
 
-# ENVIAR E-MAIL FUNCIONANDO
-
-
-@task
-def send_email(apk, erros):
-    body_email = f"""
-    <p>Falhas: {apk}</p>
-    <p>Erros: {erros}</p>
-    """
-
-    msg = email.message.Message()
-    msg['Subject'] = "Integra_SMDCG_Pluv"
-    msg['From'] = SENDER_EMAIL_ADDRESS
-    msg['To'] = RECIPIENT_EMAIL_ADDRESS
-    password = SENDER_EMAIL_PASSWORD
-    msg.add_header('Content-Type', 'text/html')
-    msg.set_payload(body_email)
-
-    s = smtplib.SMTP('smtp.gmail.com', 587)
-    s.starttls()
-    # Login Credentials for sending the mail
-    s.login(msg['From'], password)
-    s.sendmail(msg['From'], [msg['To']], msg.as_string().encode('utf-8'))
-
 # Função GIS
 
 
@@ -620,9 +603,6 @@ def svida_integration_flow():
         erros.append(e)
     else:
         print("Feições e tabelas atualizadas com sucesso")
-
-    if apk:
-        send_email(apk, erros)
 
 
 if __name__ == "__main__":
