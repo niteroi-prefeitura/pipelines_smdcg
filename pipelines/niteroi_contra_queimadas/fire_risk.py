@@ -140,10 +140,18 @@ def fire_risk_flow():
         features = geojson_features
 
         for feature in features:
-            # Constrói a expressão SQL para encontrar a feature correspondente
-            sql_expression = "objectid = 1"  # Atualiza apenas a linha com objectid 1
+            # Verifique se a chave 'objectid' existe
+            objectid = feature['attributes'].get('objectid', None)
+            
+            # Caso 'objectid' não exista, pule essa feature ou trate conforme necessário
+            if objectid is None:
+                print(f"Warning: 'objectid' not found in feature {feature}")
+                continue  # Pula a iteração atual
+            
+            # Construa a expressão SQL dinamicamente
+            sql_expression = f"objectid = {objectid}"
 
-            # Cria um dicionário com os campos da Feature Layer e os valores correspondentes do GeoJSON
+            # Crie o dicionário de valores a serem atualizados
             values_to_update = {
                 "temperatura": feature['attributes']['temperatura'],
                 "umidade": feature['attributes']['umidade'],
@@ -154,15 +162,18 @@ def fire_risk_flow():
                 "data": feature['attributes']['data']
             }
 
-            # Cria a lista de expressões para atualizar todos os campos de uma vez
-            calc_expressions = [{"field": field_name, "value": value}
-                                for field_name, value in values_to_update.items()]
+            # Atualize os campos um a um
+            for field_name, value in values_to_update.items():
+                # Prepare a expressão conforme o tipo de dado
+                calc_expression = f"'{value}'" if isinstance(value, str) else value
+                
+                # Realiza a atualização para o campo atual
+                layer.calculate(
+                    field=field_name,
+                    expression=calc_expression,
+                    where=sql_expression
+                )
 
-            # Realiza a atualização de todos os campos
-            layer.calculate(
-                where=sql_expression,
-                calc_expression=calc_expressions
-            )
 
     except requests.exceptions.RequestException as e:
         raise ValueError(f"Erro ao executar fluxo: {e}")
