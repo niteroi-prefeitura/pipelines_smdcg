@@ -12,7 +12,7 @@ from prefect.variables import Variable
 from prefect.blocks.system import Secret
 
 load_dotenv()
-user_agol = Secret.load("usuario-integrador-agol").get()
+user_agol = Secret.load("usuario-pmngeo-agol").get()
 smdcg_variables = Variable.get("smdcg_variables")
 gis_variables = Variable.get("gis_portal_variables")
 
@@ -136,7 +136,7 @@ def fire_risk_flow():
 
         to_update = geojson_features[0]['attributes']
 
-        calc_expressions = {field_name: value for field_name, value in to_update.items()}
+        calc_expressions = [{"field": field_name, "value": value} for field_name, value in to_update.items()]
 
         resp = layer.calculate(
             where="objectid=1",
