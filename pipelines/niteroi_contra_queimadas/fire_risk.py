@@ -5,8 +5,6 @@ import pandas as pd
 from prefect import flow
 from arcgis.gis import GIS
 from dotenv import load_dotenv
-import datetime
-import pytz
 from prefect import flow, task
 from prefect.variables import Variable
 from prefect.blocks.system import Secret
@@ -23,12 +21,6 @@ LAYER_ID_AGOL_METEOROLOGIA = os.getenv("LAYER_ID_AGOL_METEOROLOGIA") or smdcg_va
 URL_GIS_ENTERPRISE_GEONITEROI = os.getenv("URL_GIS_ENTERPRISE_GEONITEROI") or gis_variables["URL_GIS_ENTERPRISE_GEONITEROI"]
 URL_RISCO_FOGO_API = os.getenv("URL_RISCO_FOGO_API") or smdcg_variables["URL_RISCO_FOGO_API"]
 URL_METEOROLOGIA_API = os.getenv("URL_METEOROLOGIA_API") or smdcg_variables["URL_METEOROLOGIA_API"]
-
-def create_ms_timestamp(df,col_name):
-    brasil_tz = pytz.timezone('America/Sao_Paulo')
-    now = datetime.datetime.now(brasil_tz) 
-    timestamp_ms = int(now.timestamp()*1000)
-    df[col_name] = timestamp_ms
 
 @task
 def connect_agol():
@@ -107,13 +99,13 @@ def fire_risk_flow():
 
         # Adiciona os campos 'grav' e 'data_inicial' e seus valores
         dft['grav'] = df_risco['grav']
-        
-        create_ms_timestamp(dft,'data_inicial')
-        # Converte 'data' e 'data_inicial' em objetos datetime
-        dft['data'] = pd.to_datetime(dft['data'])
-        dft['data'] = dft['data'].dt.tz_localize('America/Sao_Paulo')
+        dft['data_inicial'] = df_risco['data_inicial']
 
-        # Converte as colunas de 'data' e 'data_inicial' em millisegundos, timestamp
+        dft['data'] = pd.to_datetime(dft['data'])
+        dft['data_inicial'] = pd.to_datetime(dft['data_inicial'])
+        dft['data'] = dft['data'].dt.tz_localize('America/Sao_Paulo')
+        dft['data_inicial'] = dft['data_inicial'].dt.tz_convert('America/Sao_Paulo')
+
         dft['data'] = dft['data'].apply(lambda x: int(x.timestamp() * 1000))
 
         geojson_features = []
