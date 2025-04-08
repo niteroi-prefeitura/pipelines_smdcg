@@ -116,7 +116,6 @@ def fire_risk_flow():
         # Converte as colunas de 'data' e 'data_inicial' em millisegundos, timestamp
         dft['data'] = dft['data'].apply(lambda x: int(x.timestamp() * 1000))
 
-        # Cria um geojson com os dados do dataframe dft
         geojson_features = []
 
         for index, row in dft.iterrows():
@@ -131,20 +130,20 @@ def fire_risk_flow():
                     "data": row['data']
                 }
             }
-
             geojson_features.append(feature)
 
         layer = connect_agol()
 
-        to_update = geojson_features[0]['attributes']            
+        to_update = geojson_features[0]['attributes']
 
-        calc_expressions = [{"field": field_name, "value": value} for field_name, value in to_update.items()]
+        calc_expressions = {field_name: value for field_name, value in to_update.items()}
 
-        layer.calculate(
+        resp = layer.calculate(
             where="objectid=1",
-            calc_expression=calc_expressions
+            calc_expression=calc_expressions 
         )
 
+        print(resp)
 
     except requests.exceptions.RequestException as e:
         raise ValueError(f"Erro ao executar fluxo: {e}")
