@@ -132,47 +132,18 @@ def fire_risk_flow():
                 }
             }
 
-            # Adicionar a feature à lista
             geojson_features.append(feature)
 
         layer = connect_agol()
 
-        features = geojson_features
+        to_update = geojson_features[0]['attributes']            
 
-        for feature in features:
-            # Verifique se a chave 'objectid' existe
-            objectid = feature['attributes'].get('objectid', None)
-            
-            # Caso 'objectid' não exista, pule essa feature ou trate conforme necessário
-            if objectid is None:
-                print(f"Warning: 'objectid' not found in feature {feature}")
-                continue  # Pula a iteração atual
-            
-            # Construa a expressão SQL dinamicamente
-            sql_expression = f"objectid = {objectid}"
+        calc_expressions = [{"field": field_name, "value": value} for field_name, value in to_update.items()]
 
-            # Crie o dicionário de valores a serem atualizados
-            values_to_update = {
-                "temperatura": feature['attributes']['temperatura'],
-                "umidade": feature['attributes']['umidade'],
-                "vento": feature['attributes']['vento'],
-                "velocidade": feature['attributes']['velocidade'],
-                "risco": feature['attributes']['risco'],
-                "inicial_risco": feature['attributes']['inicial_risco'],
-                "data": feature['attributes']['data']
-            }
-
-            # Atualize os campos um a um
-            for field_name, value in values_to_update.items():
-                # Prepare a expressão conforme o tipo de dado
-                calc_expression = f"'{value}'" if isinstance(value, str) else value
-                
-                # Realiza a atualização para o campo atual
-                layer.calculate(
-                    field=field_name,
-                    expression=calc_expression,
-                    where=sql_expression
-                )
+        layer.calculate(
+            where="objectid=1",
+            calc_expression=calc_expressions
+        )
 
 
     except requests.exceptions.RequestException as e:
