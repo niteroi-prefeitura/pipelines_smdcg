@@ -27,8 +27,12 @@
     <li>
       <a href="#files--arquivos">Files | Arquivos</a>
       <ul>
-        <li><a href="#pasta-1">Pasta 1</a></li>
-        <li><a href="#pasta-2">Pasta 2</a></li>
+        <li><a href="#pipelines">pipelines</a>
+          <ul>
+            <li><a href="#ncq">niterói_contra_queimadas</a></li>
+            <li><a href="#svida">svida</a></li>
+          </ul>
+        </li>
       </ul>
     </li>
     <li>
@@ -62,16 +66,33 @@
 
 <h2 id="files--arquivos">Files | Arquivos</h2>
 
-<details id="pasta-1">
-  <summary>📁 pasta 1</summary>
-  <p style='margin-left:20px'>Description</p>
-  <p style='margin-left:20px'>Descrição</p>
-</details>
-
-<details id="pasta-2">
-  <summary>📁 pasta 2</summary>
-  <p style='margin-left:20px'>Description</p>
-  <p style='margin-left:20px'>Descrição</p>
+<details id="pipelines">
+  <summary>📁 pipelines</summary>
+    <details>
+      <summary>📁 niteroi_contra_queimadas</summary>
+      <p>In this folder we find two pipelines developed to generate updates on fires in the Niterói Contra Queimadas HUB <a href="https://niteroicontraqueimadas.niteroi.rj.gov.br/">🔗 niteroicontraqueimadas.niteroi.rj.gov.br</a></p>
+      <ul>
+        <li><strong>fire-occurrences:</strong></li>
+        <li><strong>fire_risk:</strong></li>
+      </ul>
+      <p>Nesta pasta encontramos duas pipelines desenvolvidas para gerar as atualizações sobre incêndios no HUB de Niterói Contra Queimadas <a href="https://niteroicontraqueimadas.niteroi.rj.gov.br/">🔗 niteroicontraqueimadas.niteroi.rj.gov.br</a></p>
+      <ul>
+        <li><strong>fire-occurrences:</strong></li>
+        <li><strong>fire_risk:</strong></li>
+      </ul>
+    </details>
+    <details>
+      <summary>📁 svida</summary>
+      <p>In this folder we find two pipelines developed to generate updates on fires in the Niterói Contra Queimadas HUB</p>
+      <ul>
+        <li><strong>📄 fire-occurrences:</strong></li>
+        <li><strong>📄 fire_risk:</strong></li>
+      </ul>
+      <p>Nesta pasta encontramos uma pipeline que faz a integração dos dados meteorológicos disponíbilizados pela defesa civil.</p>
+      <ul>
+        <li><strong>📄 svida_integration:</strong></li>
+      </ul>
+    </details>
 </details>
 
 
@@ -108,7 +129,13 @@ First, install the dependencies needed to run this project
     ```sh
     ptyhon script.py
    ```
+<p>
+  ❗ NOTE: These pipelines are being executed by the Prefect Workflows manager, which saves the environment variables used. To use them locally, you will need to replace the variable values ​​as needed.
+
+  ❗ OBS.: Essas pipelines estão sendo executadas pelo gerenciador de Workflows Prefect, que guarda as variáveis de âmbiente usadas. Para usar localmente será necessário que você substitua os valores das variáveis de acordo com a necessidade.
+</p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 ## Usage | Uso
 
