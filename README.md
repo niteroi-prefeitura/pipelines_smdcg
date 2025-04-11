@@ -42,14 +42,14 @@
         <li><a href="#installation--instalação">Installation | Instalação</a></li>
       </ul>
     </li>
-    <li><a href="#usage--uso">Usage | Uso</a></li>
+    <li><a href="#how-prefect-works">What is Prefect and how it works | O que é o Prefect e como ele funciona</a></li>
     <li><a href="#-contributing--contribuindo">Contributing | Contribuindo</a></li>
     <li><a href="#contact--contato">Contact | Contato</a></li>
     <li><a href="#contributors--contribuidores">Contributors | Contribuidores</a></li>
   </ol>
 </details>
 
-## About The Repository | Sobre O Repositório
+<h2 id="about-the-repository--sobre-o-repositório">About The Repository | Sobre O Repositório</h2>
 
 <p>Welcome! This repository, created by the Data Office of the City of Niterói, organizes and shares the pipelines developed for Municipal Secretariat of Civil Defense and Geotechnics of Niterói.
 <br></p>
@@ -58,7 +58,7 @@
 <br></p>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Built With | Desenvolvido Com
+<h2 id="built-with--desenvolvido-com">Built With | Desenvolvido Com</h2>
 
 [![Python]][Python-url] [![Prefect]][Prefect-url]![env] ![Arcgis]
 
@@ -70,57 +70,68 @@
   <summary>📁 pipelines</summary>
     <details>
       <summary>📁 niteroi_contra_queimadas</summary>
-      <p>In this folder we find two pipelines developed to generate updates on fires in the Niterói Contra Queimadas HUB <a href="https://niteroicontraqueimadas.niteroi.rj.gov.br/">🔗 niteroicontraqueimadas.niteroi.rj.gov.br</a></p>
+      <p>In this folder, you’ll find two pipelines developed to update fire-related data on the Niterói Contra Queimadas HUB <a href="https://niteroicontraqueimadas.niteroi.rj.gov.br/">🔗 niteroicontraqueimadas.niteroi.rj.gov.br</a></p>
       <ul>
-        <li><strong>fire-occurrences:</strong></li>
-        <li><strong>fire_risk:</strong></li>
+        <li>
+          <strong>fire-occurrences: </strong>TAutomatically updates a fire incident layer on ArcGIS Online (AGOL) using data from Niterói's Civil Defense API, ensuring data synchronization and supporting operational decision-making.
+        </li>
+        <li>
+          <strong>fire_risk: </strong>Consolidates fire risk and meteorological data from Niterói's Civil Defense APIs into a record on ArcGIS Online to power a real-time alert system.
+        </li>
       </ul>
-      <p>Nesta pasta encontramos duas pipelines desenvolvidas para gerar as atualizações sobre incêndios no HUB de Niterói Contra Queimadas <a href="https://niteroicontraqueimadas.niteroi.rj.gov.br/">🔗 niteroicontraqueimadas.niteroi.rj.gov.br</a></p>
+      <p>Nesta pasta estão duas pipelines desenvolvidas para atualizar dados sobre incêndios no HUB Niterói Contra Queimadas <a href="https://niteroicontraqueimadas.niteroi.rj.gov.br/">🔗 niteroicontraqueimadas.niteroi.rj.gov.br</a></p>
       <ul>
-        <li><strong>fire-occurrences:</strong></li>
-        <li><strong>fire_risk:</strong></li>
+        <li>
+          <strong>fire-occurrences: </strong> Atualiza automaticamente uma camada de ocorrências de incêndio no ArcGIS Online (AGOL) com dados da API da Defesa Civil de Niterói, garantindo sincronização e apoiando a tomada de decisões operacionais.
+        </li>
+        <li>
+          <strong>fire_risk:</strong> Consolida dados de risco de incêndio e meteorologia, recebidos das APIs da Defesa Civil de Niterói, em um registro no ArcGIS Online para alimentar um sistema de alertas em tempo real.
+        </li>
       </ul>
     </details>
     <details>
       <summary>📁 svida</summary>
-      <p>In this folder we find two pipelines developed to generate updates on fires in the Niterói Contra Queimadas HUB</p>
+      <p>In this folder, you’ll find a pipeline that integrates Niterói's Civil Defense climate monitoring APIs with ArcGIS layers.</p>
       <ul>
-        <li><strong>📄 fire-occurrences:</strong></li>
-        <li><strong>📄 fire_risk:</strong></li>
+        <li>
+          <strong>📄 svida_integration: </strong>Integrates and updates geospatial and meteorological data — such as rain gauge locations, alert stages, emergency sirens, weather forecasts, localized climate data, public support points, and air quality alerts — from Niterói's Civil Defense APIs into ArcGIS platforms (Enterprise and AGOL), keeping layers and tables up to date in real time.
+        </li>
       </ul>
-      <p>Nesta pasta encontramos uma pipeline que faz a integração dos dados meteorológicos disponíbilizados pela defesa civil.</p>
+      <p>Nesta pasta está uma pipeline que integra as APIs de monitoramento climático da Defesa Civil de Niterói com camadas do ArcGIS.</p>
       <ul>
-        <li><strong>📄 svida_integration:</strong></li>
+        <li>
+          <strong>📄 svida_integration: </strong>Integra e atualiza dados geoespaciais e meteorológicos — como localização de pluviômetros, estágios de atenção, sirenes de emergência, previsões do tempo, dados climáticos regionais, pontos de apoio à população e alertas de qualidade do ar — a partir das APIs da Defesa Civil de Niterói nas plataformas ArcGIS (Enterprise e AGOL), mantendo camadas e tabelas atualizadas em tempo real. 
+        </li>
       </ul>
     </details>
 </details>
 
-
-
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
-## Getting Started
+<h2 id="getting-started">Getting Started</h2>
 
-First, install the dependencies needed to run this project
+<h3 id="prerequisites--pré-requisitos">Prerequisites | Pré-requisitos</h3>
 
-<p>Primeiro, instale as dependências necessárias para rodar o projeto</p>
+- Python -> https://www.python.org/ (3.11 version | versão 3.11)
 
-### Prerequisites | Pré-requisitos
-
-- Python -> https://www.python.org/
-- Arcpy -> https://pro.arcgis.com/en/pro-app/latest/arcpy/get-started/what-is-arcpy-.htm
-- Arcgis.gis -> https://developers.arcgis.com/python/
-
-### Installation | Instalação
+<h2 id="installation--instalação">Installation | Instalação</h2>
 
 1. Clone the repo | Clone o repositório
    ```sh
    git clone https://github.com/...
    ```
+2. Crie um âmbiente virtual na versão necessária para instalar as depenências e rodar o projeto
+   ```sh
+   py -3.11 -venv nome_do_ambiente
+   ```
+   - comando força a criação de um ambiente na versão indicada na flag. É necessário já ter o versão instalada na máquina
+   
+3. Install the dependencies needed to run this project | Instale as dependências necessárias para rodar o projeto:
 
-2. Install Libraries | Instale as bibliotecas
+<ul>
+  <li></li>
+</ul>
 
 3. Create a .env local file based on the .env.example file | Crie um arquivo local .env baseado no arquivo .env.example
    *When necessary | quando necessário* 
@@ -137,13 +148,45 @@ First, install the dependencies needed to run this project
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-## Usage | Uso
+<h2 id="how-prefect-works">What is Prefect and how it works | O que é o Prefect e como ele funciona</h2>
 
-Will be listed here the code's demo | Será inserido aqui uma demo do uso dos códigos
+<p>
+  O Prefect é uma ferramenta de orquestração de workflows que facilita a execução, o gerenciamento e o monitoramento de pipelines de dados e automações. Ele permite definir fluxos de trabalho como código Python e oferece recursos como agendamento, controle de dependências, logging e monitoramento.
+</p>
+<h3>Como ele executa pipelines do Github?</h3>
+<ol>
+  <li><strong>Código salvo no Github:</strong>
+  <br>
+  • O código do fluxo (flow) está no repositório do GitHub.
+  </li>
+
+  <li><strong>Definição de um Deployment do Prefect</strong>
+  <br>
+  • Define quando e como o fluxo será executado, indicamos no proprio código através do "@flow":
+  <br>
+  <code>
+  @flow(name="waze-live-hist",log_prints=True)<br>
+  def waze_live():
+  try:
+  </code>
+  <br>
+  • Ele pode ser configurado para rodar periodicamente (agendado) ou ser acionado manualmente.
+  </li>
+
+  <li><strong>Conexão do Prefect com o Repositório</strong>
+  <br>
+  • O Prefect pode buscar o código no GitHub automaticamente. Para isso, configura-se um Storage Block (GitHub block) no Prefect Cloud ou Prefect Server.
+  </li>
+  <li><strong>Execução do Pipeline</strong>
+  <br>
+  • Quando o fluxo é acionado (manualmente ou via agendamento), o Prefect baixa o código do GitHub e o executa na infraestrutura configurada.
+  </li>
+</ol>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## 🤝 Contributing | Contribuindo
+
+<h2 id="#-contributing--contribuindo">🤝 Contributing | Contribuindo</h2> 
 Contributions are **greatly appreciated**! | Contribuições são **sempre bem vindas**!
 
 If you have a suggestion that would make this project better, please fork the repo and create a pull request. You can also open an issue with the tag "enhancement".
@@ -159,16 +202,16 @@ Thanks! Obrigado! 😄
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Contact | Contato
+<h2 id="contact--contato">Contact | Contato</h2>
 
 Sistema de Gestão de Geoinformação - [Portal SIGeo](https://www.sigeo.niteroi.rj.gov.br/) - atendimento@sigeo.niteroi.rj.gov.br
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Contributors | Contribuidores
+<h2 id="contributors--contribuidores">Contributors | Contribuidores</h2>
 
-<a href="https://github.com/SIGeo-Niteroi/pipelines_smdcg/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=SIGeo-Niteroi/pipelines_smdcg" />
+<a href="https://github.com/niteroi-prefeitura/pipelines_smdcg/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=niteroi-prefeitura/pipelines_smdcg" />
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).
