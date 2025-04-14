@@ -68,7 +68,7 @@
 
 <details id="pipelines">
   <summary>📁 pipelines</summary>
-    <details>
+    <details id="ncq">
       <summary>📁 niteroi_contra_queimadas</summary>
       <p>In this folder, you’ll find two pipelines developed to update fire-related data on the Niterói Contra Queimadas HUB <a href="https://niteroicontraqueimadas.niteroi.rj.gov.br/">🔗 niteroicontraqueimadas.niteroi.rj.gov.br</a></p>
       <ul>
@@ -89,7 +89,7 @@
         </li>
       </ul>
     </details>
-    <details>
+    <details id="svida">
       <summary>📁 svida</summary>
       <p>In this folder, you’ll find a pipeline that integrates Niterói's Civil Defense climate monitoring APIs with ArcGIS layers.</p>
       <ul>
@@ -118,28 +118,45 @@
 <h2 id="installation--instalação">Installation | Instalação</h2>
 
 1. Clone the repo | Clone o repositório
-   ```sh
+   ```
    git clone https://github.com/...
    ```
-2. Crie um âmbiente virtual na versão necessária para instalar as depenências e rodar o projeto
-   ```sh
+2. Create a virtual environment with the required Python version | Crie um ambiente virtual com a versão do Python necessária
+   ```
    py -3.11 -venv nome_do_ambiente
    ```
-   - comando força a criação de um ambiente na versão indicada na flag. É necessário já ter o versão instalada na máquina
+   - The command above creates a virtual environment using Python version 3.11 (you must already have this version installed on your machine).
+
+   - O comando acima cria um ambiente virtual usando a versão 3.11 do Python (é necessário já ter essa versão instalada na máquina).
+
+3. Active the virtual environment | Ative o ambiente virtual
+    <br>
+    - In PowerShell | No PowerShell:
+    ```
+    ./nome_do_ambiente/Scripts/activate
+    ```
+    - In command prompt | No prompt de comando (CMD):
+    ```
+    nome_do_ambiente/Scripts/activate
+    ```
    
-3. Install the dependencies needed to run this project | Instale as dependências necessárias para rodar o projeto:
+4. Install the dependencies to run this project | Instale as dependências do projeto:
+    <br>
+    Run the following command | Execute o seguinte comando:
+    ```
+    pip install -r requirements.txt
+    ```
 
-<ul>
-  <li></li>
-</ul>
-
-3. Create a .env local file based on the .env.example file | Crie um arquivo local .env baseado no arquivo .env.example
+5. Create a .env local file based on the .env.example file | Crie um arquivo local .env baseado no arquivo .env.example
    *When necessary | quando necessário* 
 
-4. Start the application | Rode o script
-    ```sh
-    ptyhon script.py
-   ```
+6. Start the desired script | Rode o script desejado
+    ```
+    python caminho_do_arquivo/nome_do_arquivo.py
+    ```
+    ```
+    python walk_from_the_file/file_name.py
+    ```
 <p>
   ❗ NOTE: These pipelines are being executed by the Prefect Workflows manager, which saves the environment variables used. To use them locally, you will need to replace the variable values ​​as needed.
 
@@ -162,12 +179,13 @@
 
   <li><strong>Definição de um Deployment do Prefect</strong>
   <br>
-  • Define quando e como o fluxo será executado, indicamos no proprio código através do "@flow":
+  • Define quando e como o fluxo será executado, indicamos no proprio código através do "@flow".
+  <br>
+  Ex.:
   <br>
   <code>
-  @flow(name="waze-live-hist",log_prints=True)<br>
-  def waze_live():
-  try:
+  @flow(name="fluxo-svida-smdcg")<br>
+  def svida_integration_flow():
   </code>
   <br>
   • Ele pode ser configurado para rodar periodicamente (agendado) ou ser acionado manualmente.
@@ -211,7 +229,7 @@ Sistema de Gestão de Geoinformação - [Portal SIGeo](https://www.sigeo.niteroi
 <h2 id="contributors--contribuidores">Contributors | Contribuidores</h2>
 
 <a href="https://github.com/niteroi-prefeitura/pipelines_smdcg/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=niteroi-prefeitura/pipelines_smdcg" />
+  <img src="https://contrib.rocks/image?repo=niteroi-prefeitura/pipelines_smdcg"/>
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).
