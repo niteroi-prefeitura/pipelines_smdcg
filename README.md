@@ -73,7 +73,7 @@
       <p>In this folder, you’ll find two pipelines developed to update fire-related data on the Niterói Contra Queimadas HUB <a href="https://niteroicontraqueimadas.niteroi.rj.gov.br/">🔗 niteroicontraqueimadas.niteroi.rj.gov.br</a></p>
       <ul>
         <li>
-          <strong>fire-occurrences: </strong>TAutomatically updates a fire incident layer on ArcGIS Online (AGOL) using data from Niterói's Civil Defense API, ensuring data synchronization and supporting operational decision-making.
+          <strong>fire-occurrences: </strong>Automatically updates a fire incident layer on ArcGIS Online (AGOL) using data from Niterói's Civil Defense API, ensuring data synchronization and supporting operational decision-making.
         </li>
         <li>
           <strong>fire_risk: </strong>Consolidates fire risk and meteorological data from Niterói's Civil Defense APIs into a record on ArcGIS Online to power a real-time alert system.
@@ -123,7 +123,7 @@
    ```
 2. Create a virtual environment with the required Python version | Crie um ambiente virtual com a versão do Python necessária
    ```
-   py -3.11 -venv nome_do_ambiente
+   py -3.11 -m venv nome_do_ambiente
    ```
    - The command above creates a virtual environment using Python version 3.11 (you must already have this version installed on your machine).
 
@@ -155,7 +155,7 @@
     python caminho_do_arquivo/nome_do_arquivo.py
     ```
     ```
-    python walk_from_the_file/file_name.py
+    python file_path/file_name.py
     ```
 <p>
   ❗ NOTE: These pipelines are being executed by the Prefect Workflows manager, which saves the environment variables used. To use them locally, you will need to replace the variable values ​​as needed.
