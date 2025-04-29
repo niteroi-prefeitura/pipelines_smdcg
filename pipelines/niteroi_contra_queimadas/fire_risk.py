@@ -10,17 +10,24 @@ from prefect.variables import Variable
 from prefect.blocks.system import Secret
 
 load_dotenv()
-user_agol = Secret.load("usuario-pmngeo-agol").get()
+user_agol = Secret.load("usuario-integrador-agol").get()
 smdcg_variables = Variable.get("smdcg_variables")
 gis_variables = Variable.get("gis_portal_variables")
 
-AGOL_USERNAME_TO_NCQ = os.getenv("AGOL_USERNAME_TO_NCQ") or user_agol["username"]
-AGOL_PASSWORD_TO_NCQ = os.getenv("AGOL_PASSWORD_TO_NCQ") or user_agol["password"]
-LAYER_ID_AGOL_METEOROLOGIA = os.getenv("LAYER_ID_AGOL_METEOROLOGIA") or smdcg_variables["LAYER_ID_AGOL_METEOROLOGIA"]
+AGOL_USERNAME_TO_NCQ = os.getenv(
+    "AGOL_USERNAME_TO_NCQ") or user_agol["username"]
+AGOL_PASSWORD_TO_NCQ = os.getenv(
+    "AGOL_PASSWORD_TO_NCQ") or user_agol["password"]
+LAYER_ID_AGOL_METEOROLOGIA = os.getenv(
+    "LAYER_ID_AGOL_METEOROLOGIA") or smdcg_variables["LAYER_ID_AGOL_METEOROLOGIA"]
 
-URL_GIS_ENTERPRISE_GEONITEROI = os.getenv("URL_GIS_ENTERPRISE_GEONITEROI") or gis_variables["URL_GIS_ENTERPRISE_GEONITEROI"]
-URL_RISCO_FOGO_API = os.getenv("URL_RISCO_FOGO_API") or smdcg_variables["URL_RISCO_FOGO_API"]
-URL_METEOROLOGIA_API = os.getenv("URL_METEOROLOGIA_API") or smdcg_variables["URL_METEOROLOGIA_API"]
+URL_GIS_ENTERPRISE_GEONITEROI = os.getenv(
+    "URL_GIS_ENTERPRISE_GEONITEROI") or gis_variables["URL_GIS_ENTERPRISE_GEONITEROI"]
+URL_RISCO_FOGO_API = os.getenv(
+    "URL_RISCO_FOGO_API") or smdcg_variables["URL_RISCO_FOGO_API"]
+URL_METEOROLOGIA_API = os.getenv(
+    "URL_METEOROLOGIA_API") or smdcg_variables["URL_METEOROLOGIA_API"]
+
 
 @task
 def connect_agol():
@@ -40,7 +47,8 @@ def connect_agol():
         return layer
     except requests.exceptions.RequestException as e:
         raise ValueError(f"Erro ao conectar ao agol: {e}")
-    
+
+
 @task
 def get_api_risco():
     try:
@@ -52,13 +60,14 @@ def get_api_risco():
         obj1 = json.loads(content_risk)
         dfe0 = pd.DataFrame(obj1)
         dfe1 = pd.concat([dfe0.drop(['fields'], axis=1),
-                        dfe0['fields'].apply(pd.Series)], axis=1)
+                          dfe0['fields'].apply(pd.Series)], axis=1)
 
         dfe1 = dfe1[dfe1['data_final'].isnull()]
 
         return dfe1
     except requests.exceptions.RequestException as e:
         raise ValueError(f"Erro ao consultar api risco: {e}")
+
 
 @task
 def get_api_meteorologia():
@@ -74,15 +83,15 @@ def get_api_meteorologia():
 
         # Criando um dataframe
         dft = pd.DataFrame(rows, columns=[
-        'Local', 'Latitude', 'Longitude', 'temperatura', 'umidade', 
-        'vento', 'velocidade do vento', 'data', 'Velocidade_vento_2'])
-    
-        dft = dft.drop(columns=['Local', 'Latitude', 'Longitude', 'Velocidade_vento_2'])
-        
+            'Local', 'Latitude', 'Longitude', 'temperatura', 'umidade',
+            'vento', 'velocidade do vento', 'data', 'Velocidade_vento_2'])
+
+        dft = dft.drop(columns=['Local', 'Latitude',
+                       'Longitude', 'Velocidade_vento_2'])
+
         return dft
     except requests.exceptions.RequestException as e:
         raise ValueError(f"Erro ao consultar api meteorologia: {e}")
-
 
 
 @flow(name="Fluxo risco de incêndio", log_prints=True)
@@ -90,7 +99,7 @@ def fire_risk_flow():
     try:
         # Chamar dados api_risco
         df_risco = get_api_risco()
-    
+
         # Chamar dados api_meteorologica
         dft = get_api_meteorologia()
 
@@ -104,7 +113,8 @@ def fire_risk_flow():
         dft['data'] = pd.to_datetime(dft['data'])
         dft['data_inicial'] = pd.to_datetime(dft['data_inicial'])
         dft['data'] = dft['data'].dt.tz_localize('America/Sao_Paulo')
-        dft['data_inicial'] = dft['data_inicial'].dt.tz_convert('America/Sao_Paulo')
+        dft['data_inicial'] = dft['data_inicial'].dt.tz_convert(
+            'America/Sao_Paulo')
 
         dft['data'] = dft['data'].apply(lambda x: int(x.timestamp() * 1000))
 
@@ -128,11 +138,12 @@ def fire_risk_flow():
 
         to_update = geojson_features[0]['attributes']
 
-        calc_expressions = [{"field": field_name, "value": value} for field_name, value in to_update.items()]
+        calc_expressions = [{"field": field_name, "value": value}
+                            for field_name, value in to_update.items()]
 
         resp = layer.calculate(
             where="objectid=1",
-            calc_expression=calc_expressions 
+            calc_expression=calc_expressions
         )
 
         print(resp)
